@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tennis Rally Clipper 🎾</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; background: #f9f9f9; color: #333; }
+      h1 { text-align: center; }
+      .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+      #log { background: #222; color: #0f0; padding: 1rem; border-radius: 4px; font-family: monospace; height: 200px; overflow-y: auto; margin: 1rem 0; font-size: 0.9rem; }
+      #log p { margin: 0.2rem 0; }
+      input[type=file] { margin-bottom: 1rem; display: block; }
+      button { background: #10b981; color: white; border: none; padding: 0.5rem 1rem; font-size: 1.1rem; border-radius: 4px; cursor: pointer; }
+      button:disabled { background: #9ca3af; cursor: not-allowed; }
+      #result { margin-top: 1rem; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <h1>Tennis Rally Clipper 🎾 (100% Client-Side)</h1>
+    <div class="container">
+      <p>Upload a tennis match video, and AI will automatically extract the best multi-hit rallies using Audio Spectral Onset Detection!</p>
+      
+      <input type="file" id="videoUpload" accept="video/*" />
+      <button id="startBtn">Analyze & Extract Highlights</button>
+      
+      <div id="log"></div>
+      <div id="result"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
