@@ -1,5 +1,5 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile } from '@ffmpeg/util';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import FFT from 'fft.js';
 
 const ffmpeg = new FFmpeg();
@@ -80,9 +80,10 @@ async function loadFFmpeg() {
     }
   });
 
+  const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
   await ffmpeg.load({
-    coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-    wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
   });
   ffmpegLoaded = true;
   log('FFmpeg loaded successfully!');
@@ -286,7 +287,7 @@ startBtn.addEventListener('click', async () => {
     
   } catch (err: any) {
     updateProgress('Error Occurred', 0);
-    log('ERROR: ' + err.message);
+    log('ERROR: ' + (err.message || String(err))); console.error(err);
   } finally {
     startBtn.disabled = false;
   }
