@@ -82,9 +82,10 @@ async function loadFFmpeg() {
 
   const baseURL = new URL(import.meta.env.BASE_URL, window.location.origin).href;
   log('Fetching local FFmpeg core...');
+  const cb = '?v=' + Date.now();
   await ffmpeg.load({
-    coreURL: `${baseURL}ffmpeg-core.js`,
-    wasmURL: `${baseURL}ffmpeg-core.wasm`,
+    coreURL: `${baseURL}ffmpeg-core.js${cb}`,
+    wasmURL: `${baseURL}ffmpeg-core.wasm${cb}`,
   });
   ffmpegLoaded = true;
   log('FFmpeg loaded successfully!');
