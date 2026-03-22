@@ -80,7 +80,7 @@ async function loadFFmpeg() {
     }
   });
 
-  const baseURL = import.meta.env.BASE_URL;
+  const baseURL = new URL(import.meta.env.BASE_URL, window.location.origin).href;
   log('Fetching local FFmpeg core...');
   await ffmpeg.load({
     coreURL: `${baseURL}ffmpeg-core.js`,
