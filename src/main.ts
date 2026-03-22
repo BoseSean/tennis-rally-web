@@ -1,5 +1,5 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import { fetchFile } from '@ffmpeg/util';
 import FFT from 'fft.js';
 
 const ffmpeg = new FFmpeg();
@@ -80,10 +80,11 @@ async function loadFFmpeg() {
     }
   });
 
-  const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+  const baseURL = import.meta.env.BASE_URL;
+  log('Fetching local FFmpeg core...');
   await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
+    coreURL: `${baseURL}ffmpeg-core.js`,
+    wasmURL: `${baseURL}ffmpeg-core.wasm`,
   });
   ffmpegLoaded = true;
   log('FFmpeg loaded successfully!');
