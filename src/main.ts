@@ -349,7 +349,7 @@ function renderTimeline() {
         tooltip.style.display = 'block';
         tooltip.style.left = `${mouseX + 10}px`;
         tooltip.style.top = `${20}px`;
-        tooltip.textContent = `🎾 ${r.hits} hits | ${r.end - r.start:.1f}s | ${formatTime(r.start)} → ${formatTime(r.end)}`;
+        tooltip.textContent = `🎾 ${r.hits} hits | ${(r.end - r.start).toFixed(1)}s | ${formatTime(r.start)} → ${formatTime(r.end)}`;
         found = true;
         break;
       }
