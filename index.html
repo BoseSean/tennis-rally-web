@@ -15,9 +15,10 @@
       --border: #e5e7eb;
       --accent: #8b5cf6;
       --accent-light: #ede9fe;
+      --danger: #ef4444;
+      --warning: #f59e0b;
       --tennis-green: #16a34a;
       --tennis-ball: #eab308;
-      --tennis-court: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -30,14 +31,14 @@
       align-items: center;
       padding: 2rem 1rem;
     }
-    h1 { font-size: 2rem; text-align: center; margin-bottom: 0.4rem; }
-    .subtitle { text-align: center; color: #6b7280; margin-bottom: 1.5rem; font-size: 0.88rem; }
+    h1 { font-size: 2.5rem; text-align: center; margin-bottom: 0.5rem; }
+    .subtitle { text-align: center; color: #6b7280; margin-bottom: 2rem; font-size: 1rem; line-height: 1.5; }
 
     .container {
       background: var(--surface);
       border-radius: 16px;
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-      max-width: 920px;
+      max-width: 900px;
       width: 100%;
       padding: 2rem;
     }
@@ -46,43 +47,19 @@
     .dropzone {
       border: 2px dashed #9ca3af;
       border-radius: 12px;
-      padding: 2.2rem 2rem;
+      padding: 2.5rem 2rem;
       text-align: center;
       background: #f9fafb;
       cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      margin-bottom: 1.25rem;
-      position: relative;
-      overflow: hidden;
+      transition: all 0.2s ease;
+      margin-bottom: 1.5rem;
     }
-    .dropzone:hover { border-color: var(--primary); background: #ecfdf5; }
-    .dropzone.dragover { border-color: var(--primary); background: #ecfdf5; }
-    /* Minimized state */
-    .dropzone.minimized {
-      padding: 0.6rem 1rem;
-      border-style: solid;
+    .dropzone:hover, .dropzone.dragover {
       border-color: var(--primary);
-      background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: default;
+      background: #ecfdf5;
     }
-    .dropzone.minimized .icon { font-size: 1.3rem; margin: 0; }
-    .dropzone.minimized p { font-size: 0.82rem; color: #065f46; text-align: left; margin: 0; }
-    .dropzone.minimized .browse-btn {
-      margin-left: auto;
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 5px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .dropzone .icon { font-size: 2.2rem; margin-bottom: 0.4rem; pointer-events: none; }
-    .dropzone p { color: #4b5563; font-size: 0.95rem; pointer-events: none; }
+    .dropzone p { color: #4b5563; font-size: 1rem; pointer-events: none; }
+    .dropzone .icon { font-size: 2.5rem; margin-bottom: 0.5rem; pointer-events: none; }
     #videoUpload { display: none; }
 
     /* ─── Parameter Panel ─── */
@@ -90,41 +67,43 @@
       background: var(--accent-light);
       border: 1.5px solid #c4b5fd;
       border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 1.25rem;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
       display: none;
     }
     .param-panel.visible { display: block; }
-    .param-panel > h3 {
-      font-size: 0.78rem;
+    .param-panel h3 {
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #7c3aed;
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
     .param-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.2rem;
+      gap: 1.5rem;
     }
-    @media (max-width: 640px) { .param-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      .param-grid { grid-template-columns: 1fr; gap: 1rem; }
+    }
     .param-item label {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 600;
       color: #5b21b6;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.4rem;
     }
     .param-item label span {
       font-family: monospace;
       background: #ede9fe;
       padding: 1px 6px;
       border-radius: 4px;
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       color: #6d28d9;
     }
     .param-item input[type="range"] {
@@ -138,392 +117,148 @@
     }
     .param-item input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 17px;
-      height: 17px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: #7c3aed;
       cursor: pointer;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.1s;
+    }
+    .param-item input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
     }
     .param-item .param-desc {
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       color: #7c3aed;
-      margin-top: 0.25rem;
+      margin-top: 0.3rem;
       opacity: 0.8;
     }
 
     /* ─── Timeline ─── */
-    .timeline-section { display: none; margin-bottom: 1.25rem; }
+    .timeline-section {
+      display: none;
+      margin-bottom: 1.5rem;
+    }
     .timeline-section.visible { display: block; }
     .timeline-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.6rem;
-      flex-wrap: wrap;
-      gap: 0.4rem;
+      margin-bottom: 0.75rem;
     }
     .timeline-header h3 {
-      font-size: 0.78rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--tennis-green);
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
-    .timeline-stats { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .timeline-stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+    }
     .stat-chip {
       background: #dcfce7;
       color: #166534;
-      padding: 2px 9px;
+      padding: 3px 10px;
       border-radius: 20px;
       font-weight: 600;
-      font-size: 0.72rem;
       font-family: monospace;
     }
+    .stat-chip span { color: #15803d; }
 
     .timeline-canvas-wrap {
       position: relative;
       background: #1a1a2e;
       border-radius: 10px;
       overflow: hidden;
+      padding: 0;
     }
     #waveformCanvas {
       display: block;
       width: 100%;
-      height: 90px;
+      height: 120px;
+      cursor: pointer;
     }
     #timelineCanvas {
       display: block;
       width: 100%;
-      height: 68px;
-      cursor: crosshair;
+      height: 80px;
+      cursor: pointer;
       margin-top: -2px;
     }
+    .timeline-scrubber {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: rgba(255,255,255,0.8);
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Segment tooltip */
     .segment-tooltip {
       position: absolute;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.85);
       color: white;
-      padding: 5px 11px;
-      border-radius: 8px;
-      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
       font-family: monospace;
       pointer-events: none;
       white-space: nowrap;
       z-index: 10;
       display: none;
-      transform: translateX(-50%);
     }
-    .segment-tooltip::after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 5px solid transparent;
-      border-top-color: rgba(0,0,0,0.9);
-    }
-    .timeline-legend {
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.45rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.68rem;
-      color: #6b7280;
-    }
-    .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
-    .legend-bar { width: 14px; height: 9px; border-radius: 3px; }
 
-    /* ─── View Toggle ─── */
-    .view-toggle {
+    /* ─── Rally List ─── */
+    .rally-list {
       display: none;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      justify-content: flex-end;
+      margin-top: 1rem;
     }
-    .view-toggle.visible { display: flex; }
-    .view-toggle span {
-      font-size: 0.75rem;
-      color: #6b7280;
-      font-weight: 600;
-    }
-    .toggle-group {
-      display: flex;
-      background: #e5e7eb;
-      border-radius: 8px;
-      padding: 3px;
-      gap: 2px;
-    }
-    .toggle-btn {
-      padding: 0.3rem 0.75rem;
-      border: none;
-      background: transparent;
-      border-radius: 5px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #6b7280;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .toggle-btn.active {
-      background: white;
+    .rally-list.visible { display: block; }
+    .rally-list h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       color: var(--text);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 0.75rem;
     }
-
-    /* ─── Rally Grid ─── */
-    .rally-grid { display: none; margin-top: 0; }
-    .rally-grid.visible { display: block; }
-
     .rally-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
     }
-
-    /* Rally Card */
     .rally-card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
+      background: var(--primary-light);
+      border: 1.5px solid #6ee7b7;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s;
       position: relative;
     }
     .rally-card:hover {
-      border-color: var(--primary);
-      box-shadow: 0 6px 20px rgba(16,185,129,0.15);
-      transform: translateY(-2px);
+      background: #a7f3d0;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16,185,129,0.2);
     }
-    .rally-card.active {
-      border-color: var(--tennis-ball);
-      box-shadow: 0 0 0 3px rgba(234,179,8,0.2), 0 6px 20px rgba(234,179,8,0.12);
-    }
-    .card-thumb {
-      position: relative;
-      background: #0f0f23;
-      height: 130px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .card-thumb video, .card-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .play-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.3);
-      transition: background 0.15s;
-    }
-    .rally-card:hover .play-overlay { background: rgba(0,0,0,0.1); }
-    .play-circle {
-      width: 42px;
-      height: 42px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    /* Inline player */
-    .inline-player { position: relative; width: 100%; }
-    .inline-player video { width: 100%; height: 130px; display: block; background: #000; }
-    .close-inline {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0,0,0,0.65);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .thumb-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 0.3rem;
-      color: #4b5563;
-      font-size: 0.78rem;
-    }
-
-    .card-info { padding: 0.7rem 0.9rem 0.5rem; }
-    .card-title {
+    .rally-card .card-title {
       font-weight: 700;
-      font-size: 0.88rem;
-      color: var(--text);
-      margin-bottom: 0.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .rank-badge {
-      background: var(--tennis-ball);
-      color: #1f2937;
-      font-size: 0.6rem;
-      font-weight: 800;
-      padding: 1px 6px;
-      border-radius: 20px;
-    }
-    .longest-badge {
-      background: #fef3c7;
-      color: #92400e;
-      font-size: 0.6rem;
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 20px;
-    }
-    .card-meta {
-      display: flex;
-      gap: 0.6rem;
-      font-size: 0.73rem;
-      color: #6b7280;
-      font-family: monospace;
-      flex-wrap: wrap;
-    }
-    .card-actions {
-      display: flex;
-      gap: 0.4rem;
-      padding: 0.55rem 0.9rem;
-      border-top: 1px solid var(--border);
-      background: #f9fafb;
-    }
-    .dl-btn {
-      flex: 1;
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.4rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.3rem;
-      transition: background 0.15s;
-    }
-    .dl-btn:hover { background: var(--primary-hover); }
-    .dl-btn.outline {
-      background: transparent;
-      border: 1.5px solid var(--border);
-      color: var(--text);
-      flex: 0 0 auto;
-      padding: 0.4rem 0.65rem;
-      font-size: 0.72rem;
-    }
-    .dl-btn.outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-    .dl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ─── Clip-by-Clip (Sequential) View ─── */
-    .clip-list { display: none; flex-direction: column; gap: 0.75rem; }
-    .clip-list.visible { display: flex; }
-    .clip-item {
-      background: #f9fafb;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: all 0.15s;
-    }
-    .clip-item:hover { border-color: var(--primary); }
-    .clip-item.active { border-color: var(--tennis-ball); box-shadow: 0 0 0 3px rgba(234,179,8,0.15); }
-    .clip-item-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.7rem 1rem;
-      cursor: pointer;
-      background: white;
-    }
-    .clip-num {
-      width: 32px;
-      height: 32px;
-      background: var(--primary-light);
       color: #065f46;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.8rem;
-      flex-shrink: 0;
+      margin-bottom: 0.25rem;
     }
-    .clip-meta {
-      flex: 1;
-      min-width: 0;
-    }
-    .clip-meta-title {
-      font-weight: 700;
-      font-size: 0.88rem;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .clip-meta-sub {
-      font-size: 0.72rem;
-      color: #6b7280;
+    .rally-card .card-meta {
+      color: #047857;
       font-family: monospace;
-      margin-top: 0.1rem;
-    }
-    .clip-expand-icon {
-      font-size: 1.2rem;
-      color: #9ca3af;
-      transition: transform 0.2s;
-      flex-shrink: 0;
-    }
-    .clip-item.expanded .clip-expand-icon { transform: rotate(180deg); }
-    .clip-item-body {
-      display: none;
-      border-top: 1px solid var(--border);
-      background: white;
-    }
-    .clip-item.expanded .clip-item-body { display: block; }
-    .clip-video-wrap {
-      position: relative;
-      background: #0f0f23;
-    }
-    .clip-video-wrap video {
-      width: 100%;
-      height: 200px;
-      display: block;
-      background: #000;
-    }
-    .clip-actions {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.65rem 1rem;
-      background: #f9fafb;
-      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
     }
 
     /* ─── Buttons ─── */
@@ -531,41 +266,36 @@
       background: var(--primary);
       color: white;
       border: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
+      padding: 0.8rem 1.5rem;
+      font-size: 1.05rem;
       font-weight: 600;
       border-radius: 8px;
       cursor: pointer;
       width: 100%;
       transition: background 0.2s;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
     }
     .btn:hover { background: var(--primary-hover); }
     .btn:disabled { background: #9ca3af; cursor: not-allowed; }
     .btn-secondary {
       background: var(--accent);
       color: white;
-      padding: 0.65rem 1.25rem;
+      padding: 0.5rem 1rem;
       font-size: 0.9rem;
       font-weight: 600;
-      border-radius: 8px;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
       transition: background 0.2s;
     }
     .btn-secondary:hover { background: #7c3aed; }
-    .btn-amber {
-      background: var(--tennis-court);
-      color: white;
-    }
-    .btn-amber:hover { background: #b45309; }
 
     /* ─── Progress ─── */
-    .progress-container { margin-bottom: 0.75rem; display: none; }
+    .progress-container { margin-bottom: 1rem; display: none; }
     .progress-container.visible { display: block; }
     .progress-bar-wrap {
       width: 100%;
-      height: 7px;
+      height: 8px;
       background: #e5e7eb;
       border-radius: 4px;
       overflow: hidden;
@@ -577,53 +307,71 @@
       transition: width 0.3s ease;
       border-radius: 4px;
     }
-    .status-text { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem; }
+    .status-text { font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.3rem; }
 
     /* ─── Terminal ─── */
     .terminal {
       background: #1e1e1e;
       color: #10b981;
-      padding: 0.85rem 1rem;
+      padding: 1rem;
       border-radius: 8px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      height: 160px;
+      height: 220px;
       overflow-y: auto;
-      margin-top: 0.75rem;
-      font-size: 0.78rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
       display: none;
     }
     .terminal.visible { display: block; }
-    .terminal p { margin: 0.15rem 0; line-height: 1.5; }
+    .terminal p { margin: 0.2rem 0; line-height: 1.5; }
     .terminal .warn { color: #f59e0b; }
     .terminal .err { color: #ef4444; }
 
-    /* ─── CTA strip ─── */
-    .cta-strip {
-      display: none;
-      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-      border: 2px solid #6ee7b7;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      margin-top: 1.25rem;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
+    /* ─── Result ─── */
+    #result { margin-top: 1.5rem; text-align: center; }
+    video { width: 100%; border-radius: 8px; background: #000; margin: 1rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .download-btn {
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      text-decoration: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      transition: background 0.2s;
+    }
+    .download-btn:hover { background: #2563eb; }
+
+    /* ─── Timeline Legend ─── */
+    .timeline-legend {
+      display: flex;
+      gap: 1.2rem;
+      margin-top: 0.5rem;
       flex-wrap: wrap;
     }
-    .cta-strip.visible { display: flex; }
-    .cta-strip p {
-      font-size: 0.88rem;
-      color: #065f46;
-      font-weight: 600;
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      color: #6b7280;
     }
-    .cta-strip p span { color: #047857; font-family: monospace; }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .legend-bar {
+      width: 16px; height: 10px;
+      border-radius: 3px;
+    }
   </style>
-  <script type="module" crossorigin src="/tennis-rally-web/assets/index-c3lRZTbR.js"></script>
+  <script type="module" crossorigin src="/tennis-rally-web/assets/index-23ENYAeD.js"></script>
 </head>
 <body>
   <h1>🎾 Tennis Rally Clipper</h1>
-  <p class="subtitle">100% Client-Side AI — Your video never leaves your device</p>
+  <p class="subtitle">100% Client-Side AI Highlights — Your video never leaves your device</p>
 
   <div class="container">
     <!-- Dropzone -->
@@ -635,98 +383,73 @@
 
     <!-- Parameter Panel -->
     <div class="param-panel" id="paramPanel">
-      <h3>⚙️ Detection Parameters <span style="font-size:0.68rem;text-transform:none;letter-spacing:0;opacity:0.7;font-weight:400">(live preview)</span></h3>
+      <h3>⚙️ Detection Parameters <span style="font-size:0.7rem;text-transform:none;letter-spacing:0;opacity:0.7">(Adjust & See Live Preview)</span></h3>
       <div class="param-grid">
         <div class="param-item">
           <label>Delta (Sensitivity) <span id="deltaVal">2.0</span></label>
-          <input type="range" id="deltaSlider" min="0.5" max="20.0" step="0.1" value="2.0" />
-          <div class="param-desc">Higher = more selective, fewer false hits</div>
+          <input type="range" id="deltaSlider" min="0.5" max="8.0" step="0.1" value="2.0" />
+          <div class="param-desc">Lower = more sensitive to quiet hits</div>
         </div>
         <div class="param-item">
           <label>Max Gap (seconds) <span id="gapVal">4.5</span></label>
-          <input type="range" id="gapSlider" min="1.5" max="15.0" step="0.1" value="4.5" />
-          <div class="param-desc">Silence threshold between rally hits</div>
+          <input type="range" id="gapSlider" min="1.5" max="10.0" step="0.1" value="4.5" />
+          <div class="param-desc">Max silence between rally hits</div>
         </div>
         <div class="param-item">
-          <label>Min Hits <span id="minHitsVal">3</span></label>
-          <input type="range" id="minHitsSlider" min="2" max="20" step="1" value="3" />
+          <label>Min Hits to Qualify <span id="minHitsVal">3</span></label>
+          <input type="range" id="minHitsSlider" min="2" max="15" step="1" value="3" />
           <div class="param-desc">Minimum strokes per rally segment</div>
-        </div>
-        <div class="param-item">
-          <label>Energy Floor (RMS) <span id="energyVal">0.01</span></label>
-          <input type="range" id="energySlider" min="0.001" max="0.2" step="0.001" value="0.01" />
-          <div class="param-desc">Ignore segments below this audio energy</div>
-        </div>
-        <div class="param-item">
-          <label>Min Segment (s) <span id="minSegVal">3</span></label>
-          <input type="range" id="minSegSlider" min="1" max="20" step="0.5" value="3" />
-          <div class="param-desc">Discard rallies shorter than this</div>
-        </div>
-        <div class="param-item">
-          <label>Max Segment (s) <span id="maxSegVal">60</span></label>
-          <input type="range" id="maxSegSlider" min="10" max="120" step="1" value="60" />
-          <div class="param-desc">Discard rallies longer than this</div>
         </div>
       </div>
     </div>
 
-    <!-- Timeline -->
+    <!-- Timeline Section -->
     <div class="timeline-section" id="timelineSection">
       <div class="timeline-header">
-        <h3>📊 Acoustic Timeline — Rally Detection</h3>
+        <h3>📊 Acoustic Timeline — Real-time Rally Detection</h3>
         <div class="timeline-stats">
-          <div class="stat-chip" id="statRalliesChip">Rallies: <span id="statRallies">0</span></div>
-          <div class="stat-chip">Hits: <span id="statHits">0</span></div>
-          <div class="stat-chip">Duration: <span id="statDuration">—</span></div>
+          <div class="stat-chip">Rallies: <span id="statRallies">0</span></div>
+          <div class="stat-chip">Total Hits: <span id="statHits">0</span></div>
+          <div class="stat-chip">Duration: <span id="statDuration">0s</span></div>
         </div>
       </div>
+
       <div class="timeline-canvas-wrap" id="canvasWrap">
         <canvas id="waveformCanvas"></canvas>
         <canvas id="timelineCanvas"></canvas>
+        <div class="timeline-scrubber" id="scrubber"></div>
         <div class="segment-tooltip" id="tooltip"></div>
       </div>
+
       <div class="timeline-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Detected Hits</div>
-        <div class="legend-item"><div class="legend-bar" style="background:rgba(16,185,129,0.55)"></div> Rally Segment</div>
-        <div class="legend-item"><div class="legend-bar" style="background:rgba(239,68,68,0.2)"></div> Gap / Break</div>
-        <div class="legend-item" style="margin-left:auto;color:#9ca3af;font-size:0.68rem;font-style:italic">↑ Drag params · Click segments to preview</div>
+        <div class="legend-item"><div class="legend-bar" style="background:rgba(16,185,129,0.5)"></div> Rally Segment</div>
+        <div class="legend-item"><div class="legend-bar" style="background:rgba(239,68,68,0.3)"></div> Gap / Break</div>
       </div>
     </div>
 
-    <!-- View Toggle -->
-    <div class="view-toggle" id="viewToggle">
-      <span>View:</span>
-      <div class="toggle-group">
-        <button class="toggle-btn active" id="gridViewBtn">Grid</button>
-        <button class="toggle-btn" id="listViewBtn">Clip-by-Clip</button>
-      </div>
-    </div>
-
-    <!-- Rally Grid (Grid View) -->
-    <div class="rally-grid" id="rallyGrid">
+    <!-- Rally Cards -->
+    <div class="rally-list" id="rallyList">
+      <h4>🎯 Detected Rally Segments</h4>
       <div class="rally-cards" id="rallyCards"></div>
-    </div>
-
-    <!-- Clip-by-Clip List View -->
-    <div class="clip-list" id="clipList"></div>
-
-    <!-- CTA Strip -->
-    <div class="cta-strip" id="ctaStrip">
-      <p id="ctaText">🎾 <span>5</span> rallies detected. Ready to extract clips?</p>
-      <button class="btn btn-amber" id="extractBtn" style="width:auto;margin:0;flex-shrink:0;">✂️ Extract All Clips</button>
     </div>
 
     <!-- Progress -->
     <div class="progress-container" id="progressContainer">
       <div class="status-text" id="statusText">Initializing...</div>
-      <div class="progress-bar-wrap"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-bar-wrap">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
     </div>
 
-    <!-- Buttons -->
-    <button id="startBtn" class="btn" disabled>🎾 Analyze Timeline</button>
+    <!-- CTA Button -->
+    <button id="startBtn" class="btn" disabled>🎾 Analyze & Extract Highlights</button>
 
     <!-- Terminal -->
     <div class="terminal" id="log"></div>
+
+    <!-- Result -->
+    <div id="result"></div>
   </div>
 
 </body>
