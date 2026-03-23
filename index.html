@@ -62,6 +62,20 @@
     .dropzone .icon { font-size: 2.5rem; margin-bottom: 0.5rem; pointer-events: none; }
     #videoUpload { display: none; }
 
+    .dropzone.minimized {
+      padding: 0.6rem 1rem;
+      border-style: solid;
+      border-color: var(--primary);
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: default;
+    }
+    .dropzone.minimized .icon { font-size: 1.3rem; margin: 0; }
+    .dropzone.minimized p { font-size: 0.82rem; color: #065f46; text-align: left; margin: 0; }
+    .browse-btn { margin-left: auto; background: var(--primary); color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+
     /* ─── Parameter Panel ─── */
     .param-panel {
       background: var(--accent-light);
@@ -235,6 +249,53 @@
       max-height: 200px;
       overflow-y: auto;
     }
+
+    .clip-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .clip-card:hover { border-color: var(--primary); box-shadow: 0 6px 20px rgba(16,185,129,0.15); transform: translateY(-2px); }
+    .clip-card.active { border-color: var(--tennis-ball); box-shadow: 0 0 0 3px rgba(234,179,8,0.2); }
+    .clip-card .card-thumb { position: relative; background: #0f0f23; height: 130px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .clip-card .card-thumb video, .clip-card .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); transition: background 0.15s; }
+    .clip-card:hover .play-overlay { background: rgba(0,0,0,0.1); }
+    .play-circle { width: 42px; height: 42px; background: rgba(255,255,255,0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .inline-player { position: relative; width: 100%; }
+    .inline-player video { width: 100%; height: 130px; display: block; background: #000; }
+    .close-inline { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .thumb-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 0.3rem; color: #4b5563; font-size: 0.78rem; }
+    .clip-card .card-info { padding: 0.7rem 0.9rem 0.5rem; }
+    .clip-card .card-title { font-weight: 700; font-size: 0.88rem; color: var(--text); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+    .rank-badge { background: var(--tennis-ball); color: #1f2937; font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 20px; }
+    .longest-badge { background: #fef3c7; color: #92400e; font-size: 0.6rem; font-weight: 700; padding: 1px 6px; border-radius: 20px; }
+    .clip-card .card-meta { display: flex; gap: 0.6rem; font-size: 0.73rem; color: #6b7280; font-family: monospace; flex-wrap: wrap; }
+    .clip-card .card-actions { display: flex; gap: 0.4rem; padding: 0.55rem 0.9rem; border-top: 1px solid var(--border); background: #f9fafb; }
+    .dl-btn { flex: 1; background: var(--primary); color: white; border: none; padding: 0.4rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.3rem; transition: background 0.15s; }
+    .dl-btn:hover { background: var(--primary-hover); }
+    .dl-btn.outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); flex: 0 0 auto; padding: 0.4rem 0.65rem; font-size: 0.72rem; }
+    .dl-btn.outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .dl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Clip list (sequential) view */
+    .clip-item { background: #f9fafb; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; transition: all 0.15s; }
+    .clip-item:hover { border-color: var(--primary); }
+    .clip-item.active { border-color: var(--tennis-ball); }
+    .clip-item-header { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; cursor: pointer; background: white; }
+    .clip-num { width: 32px; height: 32px; background: var(--primary-light); color: #065f46; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; }
+    .clip-meta { flex: 1; min-width: 0; }
+    .clip-meta-title { font-weight: 700; font-size: 0.88rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem; }
+    .clip-meta-sub { font-size: 0.72rem; color: #6b7280; font-family: monospace; margin-top: 0.1rem; }
+    .clip-expand-icon { font-size: 1.2rem; color: #9ca3af; flex-shrink: 0; transition: transform 0.2s; }
+    .clip-item.expanded .clip-expand-icon { transform: rotate(180deg); }
+    .clip-item-body { display: none; border-top: 1px solid var(--border); background: white; }
+    .clip-item.expanded .clip-item-body { display: block; }
+    .clip-item-body video { width: 100%; height: 200px; display: block; background: #000; }
+    .clip-actions { display: flex; gap: 0.5rem; padding: 0.65rem 1rem; background: #f9fafb; border-top: 1px solid var(--border); }
     .rally-card {
       background: var(--primary-light);
       border: 1.5px solid #6ee7b7;
@@ -367,7 +428,7 @@
       border-radius: 3px;
     }
   </style>
-  <script type="module" crossorigin src="/tennis-rally-web/assets/index-23ENYAeD.js"></script>
+  <script type="module" crossorigin src="/tennis-rally-web/assets/index-F6LLzB68.js"></script>
 </head>
 <body>
   <h1>🎾 Tennis Rally Clipper</h1>
@@ -387,18 +448,33 @@
       <div class="param-grid">
         <div class="param-item">
           <label>Delta (Sensitivity) <span id="deltaVal">2.0</span></label>
-          <input type="range" id="deltaSlider" min="0.5" max="8.0" step="0.1" value="2.0" />
-          <div class="param-desc">Lower = more sensitive to quiet hits</div>
+          <input type="range" id="deltaSlider" min="0.5" max="20.0" step="0.1" value="2.0" />
+          <div class="param-desc">Higher = more selective</div>
         </div>
         <div class="param-item">
-          <label>Max Gap (seconds) <span id="gapVal">4.5</span></label>
-          <input type="range" id="gapSlider" min="1.5" max="10.0" step="0.1" value="4.5" />
-          <div class="param-desc">Max silence between rally hits</div>
+          <label>Max Gap (s) <span id="gapVal">4.5</span></label>
+          <input type="range" id="gapSlider" min="1.5" max="15.0" step="0.1" value="4.5" />
+          <div class="param-desc">Silence threshold between hits</div>
         </div>
         <div class="param-item">
-          <label>Min Hits to Qualify <span id="minHitsVal">3</span></label>
-          <input type="range" id="minHitsSlider" min="2" max="15" step="1" value="3" />
-          <div class="param-desc">Minimum strokes per rally segment</div>
+          <label>Min Hits <span id="minHitsVal">3</span></label>
+          <input type="range" id="minHitsSlider" min="2" max="20" step="1" value="3" />
+          <div class="param-desc">Min strokes per rally</div>
+        </div>
+        <div class="param-item">
+          <label>Energy Floor <span id="energyVal">0.010</span></label>
+          <input type="range" id="energySlider" min="0.001" max="0.2" step="0.001" value="0.01" />
+          <div class="param-desc">Filter low-energy noise</div>
+        </div>
+        <div class="param-item">
+          <label>Min Duration (s) <span id="minDurVal">3</span></label>
+          <input type="range" id="minDurSlider" min="1" max="30" step="0.5" value="3" />
+          <div class="param-desc">Discard shorter rallies</div>
+        </div>
+        <div class="param-item">
+          <label>Max Duration (s) <span id="maxDurVal">60</span></label>
+          <input type="range" id="maxDurSlider" min="10" max="120" step="1" value="60" />
+          <div class="param-desc">Discard longer rallies</div>
         </div>
       </div>
     </div>
@@ -428,11 +504,32 @@
       </div>
     </div>
 
-    <!-- Rally Cards -->
-    <div class="rally-list" id="rallyList">
-      <h4>🎯 Detected Rally Segments</h4>
-      <div class="rally-cards" id="rallyCards"></div>
+    <!-- View Toggle -->
+    <div class="view-toggle" id="viewToggle" style="display:none;align-items:center;justify-content:flex-end;gap:0.5rem;margin-bottom:0.75rem;">
+      <span style="font-size:0.75rem;color:#6b7280;font-weight:600;">View:</span>
+      <div style="display:flex;background:#e5e7eb;border-radius:8px;padding:3px;gap:2px;">
+        <button id="gridViewBtn" style="padding:0.3rem 0.75rem;border:none;background:white;border-radius:5px;font-size:0.75rem;font-weight:600;color:#1f2937;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);">Grid</button>
+        <button id="listViewBtn" style="padding:0.3rem 0.75rem;border:none;background:transparent;border-radius:5px;font-size:0.75rem;font-weight:600;color:#6b7280;cursor:pointer;">Clip-by-Clip</button>
+      </div>
     </div>
+
+    <!-- Rally Cards (preview before extraction) -->
+    <div class="rally-list" id="rallyList">
+      <h4>🎯 Detected Rally Segments <span id="rallyCount" style="font-weight:400;font-size:0.8rem;opacity:0.6"></span></h4>
+      <div id="rallyCards"></div>
+    </div>
+
+    <!-- Clip Grid View -->
+    <div id="clipGridView" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+        <h4 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.06em;color:#1f2937;margin:0;">🎬 Extracted Clips</h4>
+        <span id="clipCount" style="font-size:0.75rem;color:#6b7280;font-family:monospace;"></span>
+      </div>
+      <div id="clipCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;"></div>
+    </div>
+
+    <!-- Clip List (sequential) View -->
+    <div id="clipListView" style="display:none;flex-direction:column;gap:0.75rem;"></div>
 
     <!-- Progress -->
     <div class="progress-container" id="progressContainer">
