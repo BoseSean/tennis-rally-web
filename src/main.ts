@@ -504,19 +504,24 @@ uploadInput.addEventListener('change', (e) => handleFileSelect((e.target as HTML
 ['dragleave', 'drop'].forEach(ev => dropzone.addEventListener(ev, () => dropzone.classList.remove('dragover')));
 dropzone.addEventListener('drop', (e) => handleFileSelect(e.dataTransfer?.files?.[0]));
 
+const SIZE_LIMIT = 500 * 1024 * 1024; // 500MB
+let needsCompression = false;
+
 function handleFileSelect(file?: File) {
   if (file && file.type.startsWith('video/')) {
     selectedFile = file; analysisDone = false; extractionDone = false;
+    needsCompression = file.size > SIZE_LIMIT;
     rallyClips.forEach(({ url }) => URL.revokeObjectURL(url)); rallyClips.clear(); activeCardId = null;
     audioData = null; onsetEnvelope = null; rmsEnvelope = null; detectedRallies = []; detectedPeaks = [];
     dropzone.classList.add('minimized');
-    dropzone.innerHTML = `<div class="icon">🎾</div><p>${file.name} <span style="opacity:0.6;font-size:0.75em">(${(file.size/1024/1024).toFixed(1)} MB)</span></p><button class="browse-btn" id="changeFileBtn">Change</button>`;
+    const sizeLabel = (file.size/1024/1024).toFixed(1);
+    dropzone.innerHTML = `<div class="icon">🎾</div><p>${file.name} <span style="opacity:0.6;font-size:0.75em">(${sizeLabel} MB)${needsCompression ? ' → compressing...' : ''}</span></p><button class="browse-btn" id="changeFileBtn">Change</button>`;
     document.getElementById('changeFileBtn')?.addEventListener('click', (e) => { e.stopPropagation(); uploadInput.click(); });
     paramPanel.classList.remove('visible'); timelineSec.classList.remove('visible');
     rallyList.classList.remove('visible'); viewToggle.style.display = 'none';
     clipGridView.style.display = 'none'; clipListView.style.display = 'none';
     progressContainer.classList.remove('visible');
-    startBtn.textContent = '⏳ Analyzing...'; startBtn.disabled = true;
+    startBtn.textContent = needsCompression ? '⏳ Compressing Video...' : '⏳ Analyzing...'; startBtn.disabled = true;
     logDiv.innerHTML = ''; logDiv.classList.remove('visible');
     runAnalysis();
   }
@@ -530,6 +535,31 @@ async function runAnalysis() {
   try {
     await loadFFmpeg();
     await ffmpeg.writeFile('input.mp4', await fetchFile(selectedFile));
+
+    if (needsCompression) {
+      updateProgress('Compressing video (to <500MB)...', 5);
+      log('Video exceeds 500MB. Compressing with FFmpeg...');
+      // Get video duration to calculate target bitrate
+      await ffmpeg.exec(['-i', 'input.mp4', '-hide_banner']);
+      // Probe duration via a quick parse - use CRF for simplicity
+      // Target ~400MB: calculate CRF that roughly fits
+      log('Applying H.264 compression (this may take a minute)...');
+      await ffmpeg.exec([
+        '-y', '-i', 'input.mp4',
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26',
+        '-c:a', 'aac', '-b:a', '128k',
+        '-vf', 'scale=1280:-2',
+        'compressed.mp4'
+      ]);
+      log('Compression done. Replacing input...');
+      // Replace input with compressed version
+      const compData = await ffmpeg.readFile('compressed.mp4');
+      await ffmpeg.deleteFile('input.mp4');
+      await ffmpeg.writeFile('input.mp4', compData);
+      const newSize = (compData as Uint8Array).length;
+      log(`Compressed: ${(newSize/1024/1024).toFixed(1)} MB`);
+    }
+
     log('Extracting audio...');
     await ffmpeg.exec(['-y', '-i', 'input.mp4', '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', 'temp.wav']);
     log('Reading audio data...');
@@ -595,6 +625,7 @@ startBtn.addEventListener('click', async () => {
     }
   } else {
     // Re-analyze
+    needsCompression = selectedFile ? selectedFile.size > SIZE_LIMIT : false;
     analysisDone = false; extractionDone = false;
     rallyClips.forEach(({ url }) => URL.revokeObjectURL(url)); rallyClips.clear(); activeCardId = null;
     clipGridView.style.display = 'none'; clipListView.style.display = 'none';
