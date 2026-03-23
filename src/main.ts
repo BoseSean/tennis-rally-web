@@ -242,36 +242,6 @@ function drawWaveform() {
     }
     wCtx.stroke();
   }
-
-  // RMS envelope (orange)
-  if (rmsEnvelope && audioData) {
-    const rmsBlock = Math.max(1, Math.floor(rmsEnvelope.length / W));
-    const rmsMax = Math.max(...Array.from(rmsEnvelope.slice(0, 5000)), 1e-10);
-    wCtx.strokeStyle = 'rgba(249,115,22,0.7)'; // orange
-    wCtx.lineWidth = 1.2; wCtx.beginPath();
-    for (let x = 0; x < W; x++) {
-      let sum = 0;
-      for (let i = 0; i < rmsBlock && x*rmsBlock+i < rmsEnvelope.length; i++) sum += rmsEnvelope[x*rmsBlock+i];
-      const env = (sum / rmsBlock) / rmsMax; const y = H - env * H * 0.88;
-      if (x === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
-    }
-    wCtx.stroke();
-
-    // Energy threshold dashed line
-    const thresh = parseFloat(energySlider.value);
-    const threshY = H - (thresh / rmsMax) * H * 0.88;
-    wCtx.setLineDash([4, 4]);
-    wCtx.strokeStyle = 'rgba(249,115,22,0.5)';
-    wCtx.lineWidth = 1;
-    wCtx.beginPath();
-    wCtx.moveTo(0, threshY); wCtx.lineTo(W, threshY);
-    wCtx.stroke();
-    wCtx.setLineDash([]);
-    // Label
-    wCtx.fillStyle = 'rgba(249,115,22,0.7)';
-    wCtx.font = '9px monospace';
-    wCtx.fillText(`⬇ ${thresh.toFixed(3)} floor`, 4, threshY - 3);
-  }
 }
 
 function renderTimeline() {
