@@ -17,6 +17,7 @@ let extractionDone = false;
 let currentView: 'grid' | 'list' = 'grid';
 let rallyClips: Map<number, { blob: Blob; url: string }> = new Map();
 let activeCardId: number | null = null;
+let activeClipIdx: number | null = null;
 
 interface Rally {
   id: number; start: number; end: number; hits: number; hitTimes: number[]; rmsEnergy: number;
@@ -50,17 +51,11 @@ const tCtx = timelineCanvas.getContext('2d')!;
 
 const deltaSlider = document.getElementById('deltaSlider') as HTMLInputElement;
 const gapSlider = document.getElementById('gapSlider') as HTMLInputElement;
-const minHitsSlider = document.getElementById('minHitsSlider') as HTMLInputElement;
 const energySlider = document.getElementById('energySlider') as HTMLInputElement;
-const minDurSlider = document.getElementById('minDurSlider') as HTMLInputElement;
-const maxDurSlider = document.getElementById('maxDurSlider') as HTMLInputElement;
 
 const deltaVal = document.getElementById('deltaVal') as HTMLSpanElement;
 const gapVal = document.getElementById('gapVal') as HTMLSpanElement;
-const minHitsVal = document.getElementById('minHitsVal') as HTMLSpanElement;
 const energyVal = document.getElementById('energyVal') as HTMLSpanElement;
-const minDurVal = document.getElementById('minDurVal') as HTMLSpanElement;
-const maxDurVal = document.getElementById('maxDurVal') as HTMLSpanElement;
 const statRallies = document.getElementById('statRallies') as HTMLSpanElement;
 const statHits = document.getElementById('statHits') as HTMLSpanElement;
 const statDuration = document.getElementById('statDuration') as HTMLSpanElement;
@@ -141,7 +136,7 @@ function peakPick(x: Float32Array, delta: number, wait: number): number[] {
   return peaks;
 }
 
-function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterval: number, minHits: number, rms: Float32Array, energyThresh: number, minDur: number, maxDur: number): Rally[] {
+function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterval: number, rms: Float32Array, energyThresh: number): Rally[] {
   const times = peaks.map(p => p * hopLength / sr);
   if (times.length === 0) return [];
   const rallies: Rally[] = [];
@@ -150,7 +145,7 @@ function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterv
     if (current.length >= minHits) {
       const first = current[0], last = current[current.length - 1];
       const dur = last - first;
-      if (dur >= minDur && dur <= maxDur) {
+      if (dur >= 1 && dur <= 120) {
         const midFrame = Math.floor((first + last) / 2 * sr / hopLength);
         const energy = rms[Math.max(0, Math.min(midFrame, rms.length - 1))];
         if (energy >= energyThresh) {
@@ -164,10 +159,10 @@ function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterv
     if (times[i] - current[current.length - 1] <= maxInterval) current.push(times[i]);
     else flush(i);
   }
-  if (current.length >= minHits) {
+  if (current.length >= 2) {
     const first = current[0], last = current[current.length - 1];
     const dur = last - first;
-    if (dur >= minHits && dur >= minDur && dur <= maxDur) {
+    if (dur >= 1 && dur <= 120) {
       const midFrame = Math.floor((first + last) / 2 * sr / hopLength);
       const energy = rms[Math.max(0, Math.min(midFrame, rms.length - 1))];
       if (energy >= energyThresh) rallies.push({ id: rallies.length, start: Math.max(0, first - 1.5), end: last + 2.5, hits: current.length, hitTimes: [...current], rmsEnergy: energy });
@@ -180,12 +175,9 @@ function onParamsChange() {
   if (!audioData || !onsetEnvelope || !rmsEnvelope) return;
   const delta = parseFloat(deltaSlider.value);
   const maxGap = parseFloat(gapSlider.value);
-  const minHits = parseInt(minHitsSlider.value);
   const energyThresh = parseFloat(energySlider.value);
-  const minDur = parseFloat(minDurSlider.value);
-  const maxDur = parseFloat(maxDurSlider.value);
   detectedPeaks = peakPick(onsetEnvelope, delta, 10);
-  detectedRallies = detectRallies(detectedPeaks, 16000, 512, maxGap, minHits, rmsEnvelope, energyThresh, minDur, maxDur);
+  detectedRallies = detectRallies(detectedPeaks, 16000, 512, maxGap, rmsEnvelope, energyThresh);
   statRallies.textContent = String(detectedRallies.length);
   statHits.textContent = String(detectedPeaks.length);
   rallyCountEl.textContent = `(${detectedRallies.length} detected)`;
@@ -195,10 +187,7 @@ function onParamsChange() {
 
 deltaSlider.addEventListener('input', () => { deltaVal.textContent = deltaSlider.value; onParamsChange(); });
 gapSlider.addEventListener('input', () => { gapVal.textContent = gapSlider.value; onParamsChange(); });
-minHitsSlider.addEventListener('input', () => { minHitsVal.textContent = minHitsSlider.value; onParamsChange(); });
 energySlider.addEventListener('input', () => { energyVal.textContent = parseFloat(energySlider.value).toFixed(3); onParamsChange(); });
-minDurSlider.addEventListener('input', () => { minDurVal.textContent = minDurSlider.value; onParamsChange(); });
-maxDurSlider.addEventListener('input', () => { maxDurVal.textContent = maxDurSlider.value; onParamsChange(); });
 
 // View Toggle
 gridViewBtn.addEventListener('click', () => {
@@ -384,13 +373,17 @@ function closeActiveCard() {
   activeCardId = null;
 }
 
+let clipIdxMap: Map<number, number> = new Map(); // rally.id -> display index
+
 function renderClipList() {
   clipListEl.innerHTML = '';
+  clipIdxMap.clear();
   if (rallyClips.size === 0) return;
   const sorted = [...detectedRallies].sort((a, b) => (b.end - b.start) - (a.end - a.start));
   sorted.forEach((r, idx) => {
     const clip = rallyClips.get(r.id);
     if (!clip) return;
+    clipIdxMap.set(r.id, idx);
     const item = document.createElement('div');
     item.className = 'clip-item';
     item.id = `clip-item-${r.id}`;
@@ -404,14 +397,61 @@ function renderClipList() {
         <div class="clip-expand-icon">▼</div>
       </div>
       <div class="clip-item-body">
-        <video src="${clip.url}" controls preload="metadata"></video>
+        <video id="clipvid-${r.id}" src="${clip.url}" controls preload="metadata"></video>
+        <div class="clip-nav">
+          <button class="clip-nav-btn" id="prev-btn-${r.id}" ${idx === 0 ? 'disabled' : ''}>◀ Prev</button>
+          <button class="clip-nav-btn" id="next-btn-${r.id}" ${idx === sorted.length - 1 ? 'disabled' : ''}>Next ▶</button>
+        </div>
         <div class="clip-actions"><a href="${clip.url}" class="dl-btn outline" download="rally_seq_${idx+1}_${r.hits}hits.mp4" style="flex:0 0 auto;padding:0.4rem 0.8rem;">⬇ Download</a></div>
       </div>`;
+    // Expand/collapse
     item.querySelector('.clip-item-header')?.addEventListener('click', () => {
+      // Pause all other videos first
+      document.querySelectorAll('.clip-item video').forEach(v => (v as HTMLVideoElement).pause());
       const isExpanded = item.classList.contains('expanded');
       document.querySelectorAll('.clip-item.expanded').forEach(el => el.classList.remove('expanded'));
-      if (!isExpanded) item.classList.add('expanded');
-      else item.classList.remove('expanded');
+      if (!isExpanded) {
+        item.classList.add('expanded');
+        activeClipIdx = idx;
+        const vid = document.getElementById(`clipvid-${r.id}`) as HTMLVideoElement;
+        if (vid) { vid.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); vid.play().catch(() => {}); }
+      } else {
+        activeClipIdx = null;
+      }
+    });
+    // Prev button
+    item.querySelector(`#prev-btn-${r.id}`)?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const vid = document.getElementById(`clipvid-${r.id}`) as HTMLVideoElement;
+      if (vid) vid.pause();
+      const prevR = sorted[idx - 1];
+      if (prevR) {
+        document.querySelectorAll('.clip-item.expanded').forEach(el => el.classList.remove('expanded'));
+        const prevItem = document.getElementById(`clip-item-${prevR.id}`);
+        if (prevItem) {
+          prevItem.classList.add('expanded');
+          activeClipIdx = idx - 1;
+          const prevVid = document.getElementById(`clipvid-${prevR.id}`) as HTMLVideoElement;
+          if (prevVid) { prevVid.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); prevVid.play().catch(() => {}); }
+        }
+      }
+    });
+    // Next button
+    item.querySelector(`#next-btn-${r.id}`)?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const vid = document.getElementById(`clipvid-${r.id}`) as HTMLVideoElement;
+      if (vid) vid.pause();
+      const nextR = sorted[idx + 1];
+      if (nextR) {
+        document.querySelectorAll('.clip-item.expanded').forEach(el => el.classList.remove('expanded'));
+        const nextItem = document.getElementById(`clip-item-${nextR.id}`);
+        if (nextItem) {
+          nextItem.classList.add('expanded');
+          activeClipIdx = idx + 1;
+          const nextVid = document.getElementById(`clipvid-${nextR.id}`) as HTMLVideoElement;
+          if (nextVid) { nextVid.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); nextVid.play().catch(() => {}); }
+        }
+      }
     });
     clipListEl.appendChild(item);
   });
@@ -480,9 +520,7 @@ async function runAnalysis() {
     const hitsPerMin = sensitivePeaks.length / (audioDuration / 60);
     if (hitsPerMin > 60) { log(`⚠️  High noise court (${hitsPerMin.toFixed(0)} hits/min) — Anti-Interference`, 'warn'); deltaSlider.value = '6.0'; deltaVal.textContent = '6.0'; }
     else { log(`✅  Quiet environment (${hitsPerMin.toFixed(0)} hits/min)`); deltaSlider.value = '2.0'; deltaVal.textContent = '2.0'; }
-    gapVal.textContent = gapSlider.value; minHitsVal.textContent = minHitsSlider.value;
     energyVal.textContent = parseFloat(energySlider.value).toFixed(3);
-    minDurVal.textContent = minDurSlider.value; maxDurVal.textContent = maxDurSlider.value;
     onParamsChange();
     log(`🎾 ${detectedPeaks.length} hits → ${detectedRallies.length} rallies.`);
     analysisDone = true;
