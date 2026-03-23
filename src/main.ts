@@ -19,6 +19,29 @@ let rallyClips: Map<number, { blob: Blob; url: string }> = new Map();
 let activeCardId: number | null = null;
 let activeClipIdx: number | null = null;
 
+// LocalStorage persistence
+const LS_KEY = 'tennis-rally-params';
+function saveParams() {
+  localStorage.setItem(LS_KEY, JSON.stringify({
+    delta: deltaSlider.value,
+    maxGap: gapSlider.value,
+    minHits: minHitsSlider.value,
+    energy: energySlider.value,
+  }));
+}
+function loadParams() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p.delta) { deltaSlider.value = p.delta; deltaVal.textContent = p.delta; }
+    if (p.maxGap) { gapSlider.value = p.maxGap; gapVal.textContent = p.maxGap; }
+    if (p.minHits) { minHitsSlider.value = p.minHits; minHitsVal.textContent = p.minHits; }
+    if (p.energy) { energySlider.value = p.energy; energyVal.textContent = parseFloat(p.energy).toFixed(3); }
+  } catch(e) {}
+}
+loadParams();
+
 interface Rally {
   id: number; start: number; end: number; hits: number; hitTimes: number[]; rmsEnergy: number;
 }
@@ -188,10 +211,10 @@ function onParamsChange() {
   renderRallyCards();
 }
 
-deltaSlider.addEventListener('input', () => { deltaVal.textContent = deltaSlider.value; onParamsChange(); });
-gapSlider.addEventListener('input', () => { gapVal.textContent = gapSlider.value; onParamsChange(); });
-minHitsSlider.addEventListener('input', () => { minHitsVal.textContent = minHitsSlider.value; onParamsChange(); });
-energySlider.addEventListener('input', () => { energyVal.textContent = parseFloat(energySlider.value).toFixed(3); onParamsChange(); });
+deltaSlider.addEventListener('input', () => { deltaVal.textContent = deltaSlider.value; saveParams(); onParamsChange(); });
+gapSlider.addEventListener('input', () => { gapVal.textContent = gapSlider.value; saveParams(); onParamsChange(); });
+minHitsSlider.addEventListener('input', () => { minHitsVal.textContent = minHitsSlider.value; saveParams(); onParamsChange(); });
+energySlider.addEventListener('input', () => { energyVal.textContent = parseFloat(energySlider.value).toFixed(3); saveParams(); onParamsChange(); });
 
 // View Toggle
 gridViewBtn.addEventListener('click', () => {
