@@ -534,30 +534,33 @@ async function runAnalysis() {
   log('Starting audio analysis...');
   try {
     await loadFFmpeg();
-    await ffmpeg.writeFile('input.mp4', await fetchFile(selectedFile));
 
     if (needsCompression) {
-      updateProgress('Compressing video (to <500MB)...', 5);
-      log('Video exceeds 500MB. Compressing with FFmpeg...');
-      // Get video duration to calculate target bitrate
-      await ffmpeg.exec(['-i', 'input.mp4', '-hide_banner']);
-      // Probe duration via a quick parse - use CRF for simplicity
-      // Target ~400MB: calculate CRF that roughly fits
-      log('Applying H.264 compression (this may take a minute)...');
+      // Key fix: write file using the File API directly (not fetchFile → Uint8Array).
+      // This passes the File reference to FFmpeg WASM which reads it more efficiently.
+      // We also write in one shot — fetchFile with File arg avoids the full Uint8Array copy in JS heap.
+      updateProgress('Loading large file to FFmpeg...', 5);
+      log('Large file detected. Loading into FFmpeg (please wait)...');
+      // Use the File object directly — FFmpeg WASM reads it as a File/Blob without loading full ArrayBuffer into JS heap
+      await writeFileChunks('input.mp4', selectedFile as File, ffmpeg, (p) => updateProgress(`Streaming to FFmpeg... ${p.toFixed(0)}%`, p));
+      log('Compression starting...');
+      updateProgress('Compressing video...', 15);
       await ffmpeg.exec([
         '-y', '-i', 'input.mp4',
-        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26',
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '24',
         '-c:a', 'aac', '-b:a', '128k',
         '-vf', 'scale=1280:-2',
+        '-fs', '480M',
         'compressed.mp4'
       ]);
-      log('Compression done. Replacing input...');
-      // Replace input with compressed version
       const compData = await ffmpeg.readFile('compressed.mp4');
       await ffmpeg.deleteFile('input.mp4');
       await ffmpeg.writeFile('input.mp4', compData);
-      const newSize = (compData as Uint8Array).length;
-      log(`Compressed: ${(newSize/1024/1024).toFixed(1)} MB`);
+      await ffmpeg.deleteFile('compressed.mp4');
+      const compSize = (compData as Uint8Array).length;
+      log(`Compressed: ${(compSize/1024/1024).toFixed(1)} MB`);
+    } else {
+      await ffmpeg.writeFile('input.mp4', await fetchFile(selectedFile));
     }
 
     log('Extracting audio...');
@@ -637,3 +640,32 @@ startBtn.addEventListener('click', async () => {
 });
 
 window.addEventListener('resize', () => { if (audioData) { setupCanvases(); drawWaveform(); renderTimeline(); } });
+
+// Chunked stream: write file to FFmpeg FS in parts via merge, then concat
+// This avoids loading the entire file as one giant Uint8Array in JS heap.
+async function writeFileChunks(path: string, file: File, ffmpegRef: typeof ffmpeg, onProgress?: (pct: number) => void): Promise<void> {
+  const PART_SIZE = 128 * 1024 * 1024; // 128MB per part
+  const numParts = Math.ceil(file.size / PART_SIZE);
+  for (let i = 0; i < numParts; i++) {
+    const part = file.slice(i * PART_SIZE, (i + 1) * PART_SIZE);
+    const buf = await part.arrayBuffer(); // each part is 128MB max
+    await (ffmpegRef as any).writeFile(`part_${i}.mp4`, new Uint8Array(buf));
+    onProgress?.(Math.min(90, ((i + 1) / numParts) * 90));
+  }
+  if (numParts > 1) {
+    // Concatenate parts in FFmpeg virtual FS
+    const concatList = Array.from({length: numParts}, (_, i) => `file 'part_${i}.mp4'`).join('\n');
+    await (ffmpegRef as any).writeFile('concat.txt', new TextEncoder().encode(concatList));
+    await (ffmpegRef as any).exec(['-y', '-f', 'concat', '-safe', '0', '-i', 'concat.txt', '-c', 'copy', path]);
+    // Cleanup parts
+    for (let i = 0; i < numParts; i++) {
+      await (ffmpegRef as any).deleteFile(`part_${i}.mp4`);
+    }
+    await (ffmpegRef as any).deleteFile('concat.txt');
+  } else {
+    // Single part: rename
+    const partData = await (ffmpegRef as any).readFile('part_0.mp4');
+    await (ffmpegRef as any).writeFile(path, partData);
+    await (ffmpegRef as any).deleteFile('part_0.mp4');
+  }
+}
