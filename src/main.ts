@@ -51,10 +51,12 @@ const tCtx = timelineCanvas.getContext('2d')!;
 
 const deltaSlider = document.getElementById('deltaSlider') as HTMLInputElement;
 const gapSlider = document.getElementById('gapSlider') as HTMLInputElement;
+const minHitsSlider = document.getElementById('minHitsSlider') as HTMLInputElement;
 const energySlider = document.getElementById('energySlider') as HTMLInputElement;
 
 const deltaVal = document.getElementById('deltaVal') as HTMLSpanElement;
 const gapVal = document.getElementById('gapVal') as HTMLSpanElement;
+const minHitsVal = document.getElementById('minHitsVal') as HTMLSpanElement;
 const energyVal = document.getElementById('energyVal') as HTMLSpanElement;
 const statRallies = document.getElementById('statRallies') as HTMLSpanElement;
 const statHits = document.getElementById('statHits') as HTMLSpanElement;
@@ -136,7 +138,7 @@ function peakPick(x: Float32Array, delta: number, wait: number): number[] {
   return peaks;
 }
 
-function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterval: number, rms: Float32Array, energyThresh: number): Rally[] {
+function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterval: number, minHits: number, rms: Float32Array, energyThresh: number): Rally[] {
   const times = peaks.map(p => p * hopLength / sr);
   if (times.length === 0) return [];
   const rallies: Rally[] = [];
@@ -159,7 +161,7 @@ function detectRallies(peaks: number[], sr: number, hopLength: number, maxInterv
     if (times[i] - current[current.length - 1] <= maxInterval) current.push(times[i]);
     else flush(i);
   }
-  if (current.length >= 2) {
+  if (current.length >= minHits) {
     const first = current[0], last = current[current.length - 1];
     const dur = last - first;
     if (dur >= 1 && dur <= 120) {
@@ -175,9 +177,10 @@ function onParamsChange() {
   if (!audioData || !onsetEnvelope || !rmsEnvelope) return;
   const delta = parseFloat(deltaSlider.value);
   const maxGap = parseFloat(gapSlider.value);
+  const minHits = parseInt(minHitsSlider.value);
   const energyThresh = parseFloat(energySlider.value);
   detectedPeaks = peakPick(onsetEnvelope, delta, 10);
-  detectedRallies = detectRallies(detectedPeaks, 16000, 512, maxGap, rmsEnvelope, energyThresh);
+  detectedRallies = detectRallies(detectedPeaks, 16000, 512, maxGap, minHits, rmsEnvelope, energyThresh);
   statRallies.textContent = String(detectedRallies.length);
   statHits.textContent = String(detectedPeaks.length);
   rallyCountEl.textContent = `(${detectedRallies.length} detected)`;
@@ -187,6 +190,7 @@ function onParamsChange() {
 
 deltaSlider.addEventListener('input', () => { deltaVal.textContent = deltaSlider.value; onParamsChange(); });
 gapSlider.addEventListener('input', () => { gapVal.textContent = gapSlider.value; onParamsChange(); });
+minHitsSlider.addEventListener('input', () => { minHitsVal.textContent = minHitsSlider.value; onParamsChange(); });
 energySlider.addEventListener('input', () => { energyVal.textContent = parseFloat(energySlider.value).toFixed(3); onParamsChange(); });
 
 // View Toggle
@@ -228,6 +232,7 @@ function drawWaveform() {
   if (onsetEnvelope) {
     const envBlock = Math.max(1, Math.floor(onsetEnvelope.length / W));
     const maxEnv = Math.max(...Array.from(onsetEnvelope.slice(0, 5000)), 1e-10);
+    // Onset envelope (green)
     wCtx.strokeStyle = 'rgba(16,185,129,0.7)'; wCtx.lineWidth = 1.5; wCtx.beginPath();
     for (let x = 0; x < W; x++) {
       let sum = 0;
@@ -236,6 +241,36 @@ function drawWaveform() {
       if (x === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
     }
     wCtx.stroke();
+  }
+
+  // RMS envelope (orange)
+  if (rmsEnvelope && audioData) {
+    const rmsBlock = Math.max(1, Math.floor(rmsEnvelope.length / W));
+    const rmsMax = Math.max(...Array.from(rmsEnvelope.slice(0, 5000)), 1e-10);
+    wCtx.strokeStyle = 'rgba(249,115,22,0.7)'; // orange
+    wCtx.lineWidth = 1.2; wCtx.beginPath();
+    for (let x = 0; x < W; x++) {
+      let sum = 0;
+      for (let i = 0; i < rmsBlock && x*rmsBlock+i < rmsEnvelope.length; i++) sum += rmsEnvelope[x*rmsBlock+i];
+      const env = (sum / rmsBlock) / rmsMax; const y = H - env * H * 0.88;
+      if (x === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
+    }
+    wCtx.stroke();
+
+    // Energy threshold dashed line
+    const thresh = parseFloat(energySlider.value);
+    const threshY = H - (thresh / rmsMax) * H * 0.88;
+    wCtx.setLineDash([4, 4]);
+    wCtx.strokeStyle = 'rgba(249,115,22,0.5)';
+    wCtx.lineWidth = 1;
+    wCtx.beginPath();
+    wCtx.moveTo(0, threshY); wCtx.lineTo(W, threshY);
+    wCtx.stroke();
+    wCtx.setLineDash([]);
+    // Label
+    wCtx.fillStyle = 'rgba(249,115,22,0.7)';
+    wCtx.font = '9px monospace';
+    wCtx.fillText(`⬇ ${thresh.toFixed(3)} floor`, 4, threshY - 3);
   }
 }
 

@@ -462,7 +462,7 @@
     <!-- Parameter Panel -->
     <div class="param-panel" id="paramPanel">
       <h3>⚙️ Detection Parameters <span style="font-size:0.7rem;text-transform:none;letter-spacing:0;opacity:0.7">(Adjust & See Live Preview)</span></h3>
-      <div class="param-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="param-grid" style="grid-template-columns: repeat(4, 1fr);">
         <div class="param-item">
           <label>Delta (Sensitivity) <span id="deltaVal">2.0</span></label>
           <input type="range" id="deltaSlider" min="0.5" max="20.0" step="0.1" value="2.0" />
@@ -474,9 +474,14 @@
           <div class="param-desc">Silence threshold between hits</div>
         </div>
         <div class="param-item">
+          <label>Min Hits <span id="minHitsVal">3</span></label>
+          <input type="range" id="minHitsSlider" min="2" max="20" step="1" value="3" />
+          <div class="param-desc">Min strokes per rally</div>
+        </div>
+        <div class="param-item">
           <label>Energy Floor <span id="energyVal">0.010</span></label>
           <input type="range" id="energySlider" min="0.001" max="0.2" step="0.001" value="0.01" />
-          <div class="param-desc">Filter low-energy noise</div>
+          <div class="param-desc">Filter low-energy segments</div>
         </div>
       </div>
     </div>
@@ -503,6 +508,8 @@
         <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Detected Hits</div>
         <div class="legend-item"><div class="legend-bar" style="background:rgba(16,185,129,0.5)"></div> Rally Segment</div>
         <div class="legend-item"><div class="legend-bar" style="background:rgba(239,68,68,0.3)"></div> Gap / Break</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f97316;width:16px;height:3px;border-radius:0;"></div> RMS Energy</div>
+        <div class="legend-item" style="margin-left:auto;font-style:italic;font-size:0.68rem;color:#9ca3af">⬇ dashed line = Energy Floor</div>
       </div>
     </div>
 
